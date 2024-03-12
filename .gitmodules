@@ -1,0 +1,18 @@
+[submodule "web_ui"]
+	path = web_ui
+	url = git@github.com:PI-Trailblazer/web_ui.git
+[submodule "offer_microservice"]
+	path = offer_microservice
+	url = git@github.com:PI-Trailblazer/offer_microservice.git
+[submodule "user_microservice"]
+	path = user_microservice
+	url = git@github.com:PI-Trailblazer/user_microservice.git
+[submodule "monitor_microservice"]
+	path = monitor_microservice
+	url = git@github.com:PI-Trailblazer/monitor_microservice.git
+[submodule "payment_microservice"]
+	path = payment_microservice
+	url = git@github.com:PI-Trailblazer/payment_microservice.git
+[submodule "recommender_microservice"]
+	path = recommender_microservice
+	url = git@github.com:PI-Trailblazer/recommender_microservice.git
