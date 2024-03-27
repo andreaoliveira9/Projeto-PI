@@ -1,6 +1,5 @@
 services:
   db_pg:
-    image: postgres:latest
     build:
       context: ./db_pg
       dockerfile: Dockerfile
