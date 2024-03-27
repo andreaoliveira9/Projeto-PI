@@ -1,0 +1,15 @@
+CREATE USER user_db_user WITH PASSWORD 'user_db_password';
+CREATE USER offer_db_user WITH PASSWORD 'offer_db_password';
+CREATE USER payment_db_user WITH PASSWORD 'payment_db_password';
+
+CREATE DATABASE user_db;
+CREATE DATABASE offer_db;
+CREATE DATABASE payment_db;
+
+REVOKE ALL PRIVILEGES ON DATABASE user_db FROM PUBLIC;
+REVOKE ALL PRIVILEGES ON DATABASE offer_db FROM PUBLIC;
+REVOKE ALL PRIVILEGES ON DATABASE payment_db FROM PUBLIC;
+
+GRANT ALL PRIVILEGES ON DATABASE user_db TO user_db_user;
+GRANT ALL PRIVILEGES ON DATABASE offer_db TO offer_db_user;
+GRANT ALL PRIVILEGES ON DATABASE payment_db TO payment_db_user;
