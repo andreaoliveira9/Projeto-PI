@@ -10,17 +10,18 @@ services:
       retries: 3
       start_period: 30s
     ports:
-      - "5432:5432"
+      - 5432:5432
     volumes:
       - pg_data:/var/lib/postgresql/data
+    networks:
+      - backend
 
   elasticsearch:
     image: elasticsearch:8.12.2
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
-    mem_limit: 2048m
+      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
     healthcheck:
       test:
         [
@@ -32,24 +33,26 @@ services:
       retries: 3
     restart: always
     ports:
-      - "9200:9200"
+      - 9200:9200
     volumes:
       - es_data:/usr/share/elasticsearch/data
     networks:
-      - elastic
-   # ulimits:
-   #   memlock:
-   #     soft: -1
-   #     hard: -1
+      - backend
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 2048m
 
   kibana:
     image: kibana:8.12.2
     ports:
-      - "5601:5601"
+      - 5601:5601
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     networks:
-      - elastic
+      - backend
     volumes:
       - kibana-data:/usr/share/kibana/data
     restart: always
@@ -72,6 +75,91 @@ services:
       retries: 3
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - backend
+    restart: unless-stopped
+
+  web_ui:
+    build:
+      context: web_ui
+    ports:
+      - 3000:3000
+    volumes:
+      - web_ui_modules:/web_ui/node_modules
+      - ./web_ui:/web_ui
+    networks:
+      - frontend
+    restart: unless-stopped
+
+  usr_microservice:
+    build:
+      context: user_microservice
+    ports:
+      - 8000:8000
+    environment:
+      POSTGRES_USER: user_db_user
+      POSTGRES_PASSWORD: user_db_password
+      POSTGRES_DB: user_db
+      POSTGRES_SERVER: db_pg
+    volumes:
+      - ./user_microservice:/user_microservice
+    depends_on:
+      db_pg:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+
+  recommender_microservice:
+    build:
+      context: recommender_microservice
+    ports:
+      - 8001:8001
+    volumes:
+      - ./recommender_microservice:/recommender_microservice
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+
+  offer_microservice:
+    build:
+      context: offer_microservice
+    ports:
+      - 8002:8002
+    environment:
+      POSTGRES_USER: offer_db_user
+      POSTGRES_PASSWORD: offer_db_password
+      POSTGRES_DB: offer_db
+      POSTGRES_SERVER: db_pg
+    volumes:
+      - ./offer_microservice:/offer_microservice
+    depends_on:
+      db_pg:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+  
+  proxy:
+    image: nginx:stable
+    ports:
+      - 80:80
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./proxy/locations.conf:/etc/nginx/conf.d/locations.conf:ro
+      - ./proxy/conf.d/default.conf:/etc/nginx/conf.d/default.conf      
+    depends_on:
+      - web_ui
+      - usr_microservice
+      - offer_microservice
+      - recommender_microservice
+    networks:
+      - frontend
+      - backend
+    restart: unless-stopped
 
 volumes:
   pg_data:
@@ -80,8 +168,13 @@ volumes:
     driver: local
   kibana-data:
     driver: local
+  web_ui_modules:
+    driver: local
   rabbitmq-data:
     driver: local
 
 networks:
-  elastic:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
