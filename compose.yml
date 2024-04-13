@@ -120,6 +120,8 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - backend
     restart: unless-stopped
@@ -138,6 +140,8 @@ services:
       - ./offer_microservice:/offer_microservice
     depends_on:
       db_pg:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     networks:
       - backend
