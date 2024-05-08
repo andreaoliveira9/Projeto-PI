@@ -16,6 +16,25 @@ services:
     networks:
       - backend
 
+  db_mongo:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_DATABASE: monitor_db
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017 --quiet
+      interval: 1m30s
+      timeout: 30s
+      retries: 3
+      start_period: 30s
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - backend
+
   elasticsearch:
     image: elasticsearch:8.12.2
     environment:
@@ -26,7 +45,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl --silent --fail localhost:9200/_cluster/health || exit 1",
+          "curl --silent --fail localhost:9200/_cluster/health || exit 1"
         ]
       interval: 30s
       timeout: 30s
@@ -69,7 +88,7 @@ services:
       - "5672:5672"
       - "15672:15672"
     healthcheck:
-      test: ["CMD", "rabbitmqctl", "node_health_check"]
+      test: [ "CMD", "rabbitmqctl", "node_health_check" ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -146,7 +165,24 @@ services:
     networks:
       - backend
     restart: unless-stopped
-  
+
+  monitor_microservice:
+    build:
+      context: monitor_microservice
+    ports:
+      - 8003:8003
+    environment:
+      MONGO_SERVER: db_mongo
+      MONGO_PASSWORD: mongo
+    volumes:
+      - ./monitor_microservice:/monitor_microservice
+    depends_on:
+      db_mongo:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+
   proxy:
     image: nginx:stable
     ports:
@@ -154,7 +190,7 @@ services:
     volumes:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./proxy/locations.conf:/etc/nginx/conf.d/locations.conf:ro
-      - ./proxy/conf.d/default.conf:/etc/nginx/conf.d/default.conf      
+      - ./proxy/conf.d/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - web_ui
       - usr_microservice
@@ -167,6 +203,8 @@ services:
 
 volumes:
   pg_data:
+    driver: local
+  mongo_data:
     driver: local
   es_data:
     driver: local
