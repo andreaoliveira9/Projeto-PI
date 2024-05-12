@@ -45,7 +45,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl --silent --fail localhost:9200/_cluster/health || exit 1"
+          "curl --silent --fail localhost:9200/_cluster/health || exit 1",
         ]
       interval: 30s
       timeout: 30s
@@ -88,7 +88,7 @@ services:
       - "5672:5672"
       - "15672:15672"
     healthcheck:
-      test: [ "CMD", "rabbitmqctl", "node_health_check" ]
+      test: ["CMD", "rabbitmqctl", "node_health_check"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -157,6 +157,27 @@ services:
       POSTGRES_SERVER: db_pg
     volumes:
       - ./offer_microservice:/offer_microservice
+    depends_on:
+      db_pg:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+
+  payment_microservice:
+    build:
+      context: payment_microservice
+    ports:
+      - 8004:8004
+    environment:
+      POSTGRES_USER: payment_db_user
+      POSTGRES_PASSWORD: payment_db_password
+      POSTGRES_DB: payment_db
+      POSTGRES_SERVER: db_pg
+    volumes:
+      - ./payment_microservice:/payment_microservice
     depends_on:
       db_pg:
         condition: service_healthy
