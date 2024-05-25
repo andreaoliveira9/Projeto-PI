@@ -1,0 +1,42 @@
+[  
+    {
+        "userid": "foCBRrRvCXUiuzhpp55dPCRLaij2",
+        "amount": 80,
+        "quantity": 2,
+        "status": "Payed",
+        "offer_id": 1,
+        "nationality": "Portuguese"
+    },
+    {
+        "userid": "OX7rpQpV4VeYzHKKEkZyCcA3sAT2",
+        "amount": 80,
+        "quantity": 1,
+        "status": "Payed",
+        "offer_id": 1,
+        "nationality": "Portuguese"
+    },
+    {
+        "userid": "A9sLKIx8dSPlb2wDKut1XT8oUsW2",
+        "amount": 80,
+        "quantity": 3,
+        "status": "Payed",
+        "offer_id": 1,
+        "nationality": "Portuguese"
+    },
+    {
+        "userid": "PCIU4mlRjoNJjDXTtFkYLI9nY733",
+        "amount": 80,
+        "quantity": 2,
+        "status": "Payed",
+        "offer_id": 1,
+        "nationality": "Spanish"
+    },
+    {
+        "userid": "LLfu9Irl7fSdQ9sbMhxymzXySd83",
+        "amount": 25,
+        "quantity": 1,
+        "status": "Payed",
+        "offer_id": 2,
+        "nationality": "French"
+    }
+]
